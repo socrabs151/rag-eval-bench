@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ml-glossary",
+    "name": "ML glossary QA",
+    "version": "v1",
+    "created_at": "2026-10-28T10:00:00Z",
+    "tags": [
+      "qa",
+      "rag",
+      "english"
+    ],
+    "datasheet": [
+      {
+        "label": "Motivation",
+        "value": "A small offline fixture for developing the evaluation harness before a real corpus is connected.",
+        "mono": false
+      },
+      {
+        "label": "Composition",
+        "value": "Twelve glossary notes and eight questions about retrieval, generation and evaluation.",
+        "mono": false
+      },
+      {
+        "label": "Collection",
+        "value": "The notes were written for this repository; no third-party text is included.",
+        "mono": false
+      },
+      {
+        "label": "Intended use",
+        "value": "Smoke tests, UI development and metric sanity checks. Not a benchmark: the sample is too small for comparative claims.",
+        "mono": false
+      }
+    ],
+    "provenance": [
+      {
+        "label": "Source",
+        "value": "scripts/build_demo_data.py",
+        "mono": true
+      },
+      {
+        "label": "License",
+        "value": "Same as this repository",
+        "mono": false
+      }
+    ]
+  }
+]

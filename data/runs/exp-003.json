@@ -1,0 +1,295 @@
+{
+  "id": "exp-003",
+  "name": "hybrid-rerank-qwen7b",
+  "status": "succeeded",
+  "dataset": "ml-glossary",
+  "owner": "socrabs151",
+  "git_sha": "f93c0b5",
+  "seed": 13,
+  "tags": [
+    "hybrid",
+    "reranker",
+    "large-generator"
+  ],
+  "started_at": "2026-11-04T18:40:00Z",
+  "finished_at": "2026-11-04T18:45:05Z",
+  "duration_ms": 305000,
+  "error": null,
+  "config": {
+    "retriever": "hybrid",
+    "k": 5,
+    "reranker": "bge-reranker-base",
+    "generator": "qwen2.5:7b-instruct",
+    "prompt": "v1",
+    "chunk_size": 400,
+    "chunk_overlap": 50
+  },
+  "metrics": {
+    "recall_at_5": 1.0,
+    "mrr_at_10": 0.875,
+    "f1": 0.959,
+    "faithfulness": 0.88,
+    "latency_ms": 4088
+  },
+  "series": {
+    "f1": [
+      {
+        "step": 0,
+        "value": 1.0
+      },
+      {
+        "step": 1,
+        "value": 1.0
+      },
+      {
+        "step": 2,
+        "value": 1.0
+      },
+      {
+        "step": 3,
+        "value": 0.969
+      },
+      {
+        "step": 4,
+        "value": 0.975
+      },
+      {
+        "step": 5,
+        "value": 0.979
+      },
+      {
+        "step": 6,
+        "value": 0.982
+      },
+      {
+        "step": 7,
+        "value": 0.959
+      }
+    ],
+    "recall_at_5": [
+      {
+        "step": 0,
+        "value": 1.0
+      },
+      {
+        "step": 1,
+        "value": 1.0
+      },
+      {
+        "step": 2,
+        "value": 1.0
+      },
+      {
+        "step": 3,
+        "value": 1.0
+      },
+      {
+        "step": 4,
+        "value": 1.0
+      },
+      {
+        "step": 5,
+        "value": 1.0
+      },
+      {
+        "step": 6,
+        "value": 1.0
+      },
+      {
+        "step": 7,
+        "value": 1.0
+      }
+    ],
+    "mrr_at_10": [
+      {
+        "step": 0,
+        "value": 1.0
+      },
+      {
+        "step": 1,
+        "value": 1.0
+      },
+      {
+        "step": 2,
+        "value": 1.0
+      },
+      {
+        "step": 3,
+        "value": 0.875
+      },
+      {
+        "step": 4,
+        "value": 0.9
+      },
+      {
+        "step": 5,
+        "value": 0.917
+      },
+      {
+        "step": 6,
+        "value": 0.857
+      },
+      {
+        "step": 7,
+        "value": 0.875
+      }
+    ],
+    "latency_ms": [
+      {
+        "step": 0,
+        "value": 3900
+      },
+      {
+        "step": 1,
+        "value": 3950
+      },
+      {
+        "step": 2,
+        "value": 4000
+      },
+      {
+        "step": 3,
+        "value": 4050
+      },
+      {
+        "step": 4,
+        "value": 4050
+      },
+      {
+        "step": 5,
+        "value": 4067.0
+      },
+      {
+        "step": 6,
+        "value": 4086.0
+      },
+      {
+        "step": 7,
+        "value": 4088.0
+      }
+    ]
+  },
+  "stages": [
+    {
+      "name": "prepare",
+      "status": "succeeded",
+      "started_at": "2026-11-04T18:40:00Z",
+      "ended_at": "2026-11-04T18:40:03Z"
+    },
+    {
+      "name": "index",
+      "status": "succeeded",
+      "started_at": "2026-11-04T18:40:03Z",
+      "ended_at": "2026-11-04T18:40:20Z"
+    },
+    {
+      "name": "evaluate",
+      "status": "succeeded",
+      "started_at": "2026-11-04T18:40:20Z",
+      "ended_at": "2026-11-04T18:45:05Z"
+    }
+  ],
+  "examples": [
+    {
+      "id": "q1",
+      "question": "What does retrieval-augmented generation combine?",
+      "expected": "A retriever and a generator.",
+      "answer": "A retriever and a generator.",
+      "retrieved_ids": [
+        "rag"
+      ],
+      "f1": 1.0,
+      "faithfulness": null,
+      "latency_ms": 3900
+    },
+    {
+      "id": "q2",
+      "question": "Which parameters does BM25 use?",
+      "expected": "k1 and b.",
+      "answer": "k1 and b.",
+      "retrieved_ids": [
+        "bm25"
+      ],
+      "f1": 1.0,
+      "faithfulness": null,
+      "latency_ms": 4000
+    },
+    {
+      "id": "q3",
+      "question": "Which fusion method is common for hybrid retrieval?",
+      "expected": "Reciprocal rank fusion.",
+      "answer": "Reciprocal rank fusion.",
+      "retrieved_ids": [
+        "hybrid",
+        "dense"
+      ],
+      "f1": 1.0,
+      "faithfulness": null,
+      "latency_ms": 4100
+    },
+    {
+      "id": "q4",
+      "question": "Why is a cross-encoder slower than a bi-encoder?",
+      "expected": "It scores the query and the passage jointly.",
+      "answer": "It scores the query and the passage together.",
+      "retrieved_ids": [
+        "dense",
+        "reranking"
+      ],
+      "f1": 0.875,
+      "faithfulness": null,
+      "latency_ms": 4200
+    },
+    {
+      "id": "q5",
+      "question": "What does recall at k measure?",
+      "expected": "The fraction of queries with a relevant passage in the top k.",
+      "answer": "The fraction of queries with a relevant passage in the top k.",
+      "retrieved_ids": [
+        "recall",
+        "mrr"
+      ],
+      "f1": 1.0,
+      "faithfulness": null,
+      "latency_ms": 4050
+    },
+    {
+      "id": "q6",
+      "question": "How is faithfulness defined?",
+      "expected": "Every claim in the answer is supported by the retrieved context.",
+      "answer": "Every claim in the answer is supported by the retrieved context.",
+      "retrieved_ids": [
+        "faithfulness"
+      ],
+      "f1": 1.0,
+      "faithfulness": null,
+      "latency_ms": 4150
+    },
+    {
+      "id": "q7",
+      "question": "What should an LLM judge be calibrated against?",
+      "expected": "Human labels, for example with Cohen's kappa.",
+      "answer": "Human labels, for example with Cohen's kappa.",
+      "retrieved_ids": [
+        "prompting",
+        "judge"
+      ],
+      "f1": 1.0,
+      "faithfulness": null,
+      "latency_ms": 4200
+    },
+    {
+      "id": "q8",
+      "question": "What does chunk overlap trade off?",
+      "expected": "Context completeness against retrieval precision.",
+      "answer": "Context completeness versus retrieval precision.",
+      "retrieved_ids": [
+        "chunking",
+        "dense"
+      ],
+      "f1": 0.8,
+      "faithfulness": null,
+      "latency_ms": 4100
+    }
+  ]
+}

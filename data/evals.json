@@ -1,0 +1,12 @@
+[
+  {
+    "id": "qa-f1",
+    "name": "Answer token F1",
+    "dataset": "ml-glossary",
+    "scorer": "token-f1",
+    "metric": "f1",
+    "metric_key": "f1",
+    "direction": "maximize",
+    "aggregate": "mean"
+  }
+]

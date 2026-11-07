@@ -1,0 +1,8 @@
+{"id": "q1", "question": "What does retrieval-augmented generation combine?", "expected_answer": "A retriever and a generator.", "dataset": "ml-glossary", "gold_doc_ids": ["rag"], "tags": ["architecture"]}
+{"id": "q2", "question": "Which parameters does BM25 use?", "expected_answer": "k1 and b.", "dataset": "ml-glossary", "gold_doc_ids": ["bm25"], "tags": ["retrieval"]}
+{"id": "q3", "question": "Which fusion method is common for hybrid retrieval?", "expected_answer": "Reciprocal rank fusion.", "dataset": "ml-glossary", "gold_doc_ids": ["hybrid"], "tags": ["retrieval"]}
+{"id": "q4", "question": "Why is a cross-encoder slower than a bi-encoder?", "expected_answer": "It scores the query and the passage jointly.", "dataset": "ml-glossary", "gold_doc_ids": ["reranking"], "tags": ["reranking"]}
+{"id": "q5", "question": "What does recall at k measure?", "expected_answer": "The fraction of queries with a relevant passage in the top k.", "dataset": "ml-glossary", "gold_doc_ids": ["recall"], "tags": ["metrics"]}
+{"id": "q6", "question": "How is faithfulness defined?", "expected_answer": "Every claim in the answer is supported by the retrieved context.", "dataset": "ml-glossary", "gold_doc_ids": ["faithfulness"], "tags": ["metrics"]}
+{"id": "q7", "question": "What should an LLM judge be calibrated against?", "expected_answer": "Human labels, for example with Cohen's kappa.", "dataset": "ml-glossary", "gold_doc_ids": ["judge"], "tags": ["evaluation"]}
+{"id": "q8", "question": "What does chunk overlap trade off?", "expected_answer": "Context completeness against retrieval precision.", "dataset": "ml-glossary", "gold_doc_ids": ["chunking"], "tags": ["indexing"]}

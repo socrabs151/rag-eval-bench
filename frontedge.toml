@@ -1,0 +1,48 @@
+project = "rag-eval-bench"
+density = "default"
+theme = "light"
+run_columns = [
+    "name",
+    "status",
+    "dataset",
+    "startedAt",
+    "durationMs",
+    "recall_at_5",
+    "mrr_at_10",
+    "f1",
+    "faithfulness",
+    "latency_ms",
+]
+live_refresh_seconds = 0
+page_size = 50
+baseline_run = "exp-002"
+
+[[metrics]]
+id = "recall_at_5"
+label = "Recall@5"
+direction = "maximize"
+digits = 3
+
+[[metrics]]
+id = "mrr_at_10"
+label = "MRR@10"
+direction = "maximize"
+digits = 3
+
+[[metrics]]
+id = "f1"
+label = "F1"
+direction = "maximize"
+digits = 3
+
+[[metrics]]
+id = "faithfulness"
+label = "Faithfulness"
+direction = "maximize"
+digits = 3
+
+[[metrics]]
+id = "latency_ms"
+label = "Latency"
+direction = "minimize"
+digits = 0
