@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import argparse
+import os
+import sys
 from collections.abc import Sequence
+from dataclasses import replace
+from pathlib import Path
 
 from .config import Settings
+from .datasets import SPECS, DatasetError, fetch_dataset
 from .evaluation.runner import run_experiment
 from .storage import Store
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rag-eval-bench",
         description="Run RAG experiments and serve the frontedge interface.",
@@ -21,18 +26,66 @@ def main(argv: Sequence[str] | None = None) -> int:
     run_parser.add_argument("--generator", default="extractive", choices=["extractive", "ollama"])
     run_parser.add_argument("--model", default="qwen2.5:3b-instruct")
     run_parser.add_argument("--name")
+    run_parser.add_argument(
+        "--data-dir",
+        type=Path,
+        help="directory with corpus.jsonl and questions.jsonl (default: data)",
+    )
 
     serve_parser = subparsers.add_parser("serve", help="serve the interface")
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument("--port", type=int, default=8000)
     serve_parser.add_argument("--reload", action="store_true")
+    serve_parser.add_argument(
+        "--data-dir",
+        type=Path,
+        help="directory with corpus.jsonl and questions.jsonl (default: data)",
+    )
 
-    args = parser.parse_args(argv)
+    fetch_parser = subparsers.add_parser(
+        "fetch-data", help="download, verify and convert a public dataset"
+    )
+    fetch_parser.add_argument("--dataset", default="scifact", choices=sorted(SPECS))
+    fetch_parser.add_argument(
+        "--dest",
+        type=Path,
+        help="target directory (default: datasets/<dataset>)",
+    )
+    fetch_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="download again even when the local files are valid",
+    )
+
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _build_parser().parse_args(argv)
+
+    if args.command == "fetch-data":
+        destination = args.dest or Path("datasets") / args.dataset
+        try:
+            record, documents, questions = fetch_dataset(
+                args.dataset, destination, force=args.force
+            )
+        except DatasetError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 2
+        print(
+            f"{record.id} ({record.version}): {documents} documents, "
+            f"{questions} questions -> {destination}"
+        )
+        return 0
+
     settings = Settings.from_env()
+    if args.data_dir is not None:
+        settings = replace(settings, data_dir=args.data_dir)
 
     if args.command == "serve":
         import uvicorn
 
+        os.environ["RAG_EVAL_DATA_DIR"] = str(settings.data_dir)
         uvicorn.run(
             "rag_eval_bench.app:create_app",
             factory=True,
@@ -52,10 +105,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         model=args.model,
         name=args.name,
     )
-    print(
-        f"{record.id}: f1={record.metrics['f1']:.3f} "
-        f"recall@5={record.metrics['recall_at_5']:.3f} "
-        f"mrr@10={record.metrics['mrr_at_10']:.3f} "
-        f"latency={record.metrics['latency_ms']:.0f} ms"
-    )
+    details = " ".join(f"{key}={value}" for key, value in record.metrics.items())
+    print(f"{record.id}: {details}")
     return 0
