@@ -208,7 +208,9 @@ def _read_qrels(path: Path) -> dict[str, list[str]]:
     return qrels
 
 
-def convert_scifact(source_dir: Path, destination: Path) -> tuple[DatasetRecord, int, int]:
+def convert_scifact(
+    source_dir: Path, destination: Path, spec: DatasetSpec
+) -> tuple[DatasetRecord, int, int]:
     """Convert the raw SciFact files into the store layout used by the bench."""
 
     corpus = [
@@ -241,7 +243,6 @@ def convert_scifact(source_dir: Path, destination: Path) -> tuple[DatasetRecord,
     _write_jsonl(destination / "corpus.jsonl", [doc.model_dump() for doc in corpus])
     _write_jsonl(destination / "questions.jsonl", [q.model_dump() for q in questions])
 
-    spec = SPECS["scifact"]
     record = DatasetRecord(
         id=spec.id,
         name=spec.title,
@@ -306,6 +307,13 @@ def write_manifest(
     return path
 
 
+Converter = Callable[[Path, Path, DatasetSpec], tuple[DatasetRecord, int, int]]
+
+CONVERTERS: dict[str, Converter] = {
+    "scifact": convert_scifact,
+}
+
+
 def read_manifest(destination: Path) -> dict[str, Any]:
     path = destination / MANIFEST_NAME
     if not path.is_file():
@@ -323,12 +331,13 @@ def fetch_dataset(
     """Fetch, verify and convert a public dataset into ``destination``."""
 
     spec = SPECS.get(name)
-    if spec is None:
+    converter = CONVERTERS.get(name)
+    if spec is None or converter is None:
         known = ", ".join(sorted(SPECS))
         raise DatasetError(f"unknown dataset {name!r}; available: {known}")
 
     target = Path(destination)
     ensure_artifacts(spec, target, force=force, opener=opener)
-    record, documents, questions = convert_scifact(target, target)
+    record, documents, questions = converter(target, target, spec)
     write_manifest(spec, target, documents=documents, questions=questions)
     return record, documents, questions

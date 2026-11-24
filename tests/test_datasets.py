@@ -73,7 +73,7 @@ def fixture_spec(monkeypatch: pytest.MonkeyPatch) -> DatasetSpec:
 
 
 def test_convert_writes_store_layout(tmp_path: Path) -> None:
-    record, documents, questions = convert_scifact(FIXTURE, tmp_path)
+    record, documents, questions = convert_scifact(FIXTURE, tmp_path, datasets.SPECS["scifact"])
 
     assert (documents, questions) == (3, 2)
     assert record.id == "scifact"
@@ -140,7 +140,7 @@ def test_unknown_dataset_is_rejected(tmp_path: Path) -> None:
 
 
 def test_retrieval_only_dataset_has_no_answer_metrics(tmp_path: Path) -> None:
-    convert_scifact(FIXTURE, tmp_path)
+    convert_scifact(FIXTURE, tmp_path, datasets.SPECS["scifact"])
     store = Store(tmp_path)
 
     record = run_experiment(store=store, artifacts_dir=tmp_path / "artifacts", k=3)
@@ -153,7 +153,7 @@ def test_retrieval_only_dataset_has_no_answer_metrics(tmp_path: Path) -> None:
 
 
 def test_datasets_file_is_valid_json(tmp_path: Path) -> None:
-    convert_scifact(FIXTURE, tmp_path)
+    convert_scifact(FIXTURE, tmp_path, datasets.SPECS["scifact"])
 
     raw: list[dict[str, Any]] = json.loads((tmp_path / "datasets.json").read_text(encoding="utf-8"))
 
