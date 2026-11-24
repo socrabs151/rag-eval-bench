@@ -1,0 +1,3 @@
+{"_id": "101", "title": "Retrieval-augmented generation", "text": "Retrieval-augmented generation pairs a retriever with a generator. The retriever selects passages, and the generator answers from them."}
+{"_id": "102", "title": "BM25", "text": "BM25 ranks documents by term frequency and inverse document frequency, with parameters that control saturation and length normalisation."}
+{"_id": "103", "title": "Reciprocal rank fusion", "text": "Reciprocal rank fusion merges several ranked lists by summing one over k plus the rank of each document."}
