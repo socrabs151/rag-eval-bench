@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,7 +7,17 @@ name = "rag-eval-bench"
 version = "0.1.0"
 description = "A reproducible bench for retrieval-augmented generation pipelines"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
+keywords = ["rag", "retrieval", "evaluation", "llm", "benchmark"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
+authors = [{ name = "Ivan Tkachev" }]
 dependencies = [
     "frontedge[serve]>=0.5,<0.6",
     "pydantic>=2.9",
@@ -22,6 +32,9 @@ dev = [
 retrieval = [
     "sentence-transformers>=3",
 ]
+
+[project.urls]
+Repository = "https://github.com/socrabs151/rag-eval-bench"
 
 [project.scripts]
 rag-eval-bench = "rag_eval_bench.cli:main"
