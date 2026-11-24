@@ -61,4 +61,4 @@ jobs:
       - name: Run one experiment on the bundled data
         run: rag-eval-bench run --retriever bm25 --k 5 --name ci-smoke
       - name: Check the run artifact
-        run: test -n "$(ls -A artifacts/runs/*.json)"
+        run: test -s "$(ls artifacts/runs/*.json | head -n1)"
