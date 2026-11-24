@@ -61,6 +61,7 @@ def run_experiment(
     indexed_at = datetime.now(UTC)
 
     examples: list[ExampleRecord] = []
+    has_answers = any(q.expected_answer.strip() for q in store.questions)
     f1_values: list[float] = []
     recall_values: list[float] = []
     rr_values: list[float] = []
@@ -77,11 +78,13 @@ def run_experiment(
         generation = generator_impl.generate(question.question, hits)
         latency = int((time.perf_counter() - tick) * 1000)
 
-        f1 = token_f1(generation.text, question.expected_answer)
+        scored = bool(question.expected_answer.strip())
+        f1 = token_f1(generation.text, question.expected_answer) if scored else 0.0
         recall = recall_at_k(retrieved_ids, question.gold_doc_ids, k)
         rr = reciprocal_rank(retrieved_ids, question.gold_doc_ids)
 
-        f1_values.append(f1)
+        if scored:
+            f1_values.append(f1)
         recall_values.append(recall)
         rr_values.append(rr)
         latencies.append(latency)
@@ -97,7 +100,8 @@ def run_experiment(
                 latency_ms=latency,
             )
         )
-        series_f1.append(SeriesPoint(step=step, value=round(mean(f1_values), 3)))
+        if scored:
+            series_f1.append(SeriesPoint(step=step, value=round(mean(f1_values), 3)))
         series_recall.append(SeriesPoint(step=step, value=round(mean(recall_values), 3)))
         series_mrr.append(SeriesPoint(step=step, value=round(mean(rr_values), 3)))
         series_latency.append(SeriesPoint(step=step, value=round(mean(latencies), 0)))
@@ -108,7 +112,7 @@ def run_experiment(
         id=run_id,
         name=name or f"{retriever}-k{k}-{generator}",
         status="succeeded",
-        dataset="ml-glossary",
+        dataset=store.questions[0].dataset,
         tags=[retriever, generator],
         started_at=started,
         finished_at=finished,
@@ -124,12 +128,12 @@ def run_experiment(
         metrics={
             "recall_at_5": round(mean(recall_values), 3),
             "mrr_at_10": round(mean(rr_values), 3),
-            "f1": round(mean(f1_values), 3),
+            **({"f1": round(mean(f1_values), 3)} if has_answers else {}),
             "faithfulness": 0.0,
             "latency_ms": round(mean(latencies)),
         },
         series={
-            "f1": series_f1,
+            **({"f1": series_f1} if has_answers else {}),
             "recall_at_5": series_recall,
             "mrr_at_10": series_mrr,
             "latency_ms": series_latency,

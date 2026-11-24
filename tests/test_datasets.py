@@ -139,6 +139,19 @@ def test_unknown_dataset_is_rejected(tmp_path: Path) -> None:
         fetch_dataset("does-not-exist", tmp_path)
 
 
+def test_retrieval_only_dataset_has_no_answer_metrics(tmp_path: Path) -> None:
+    convert_scifact(FIXTURE, tmp_path)
+    store = Store(tmp_path)
+
+    record = run_experiment(store=store, artifacts_dir=tmp_path / "artifacts", k=3)
+
+    assert record.dataset == "scifact"
+    assert "f1" not in record.metrics
+    assert "f1" not in record.series
+    assert record.metrics["recall_at_5"] >= 0.0
+    assert record.metrics["mrr_at_10"] >= 0.0
+
+
 def test_datasets_file_is_valid_json(tmp_path: Path) -> None:
     convert_scifact(FIXTURE, tmp_path)
 
