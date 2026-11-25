@@ -1,0 +1,75 @@
+{
+  "dataset": "scifact",
+  "k": 5,
+  "rows": [
+    {
+      "label": "BM25",
+      "retriever": "bm25",
+      "reranker": null,
+      "run_id": "bm25-20261125-202917",
+      "dataset": "scifact",
+      "metrics": {
+        "recall_at_5": 0.65,
+        "mrr_at_10": 0.545,
+        "faithfulness": 0.0,
+        "retrieval_ms": 143.0,
+        "latency_ms": 143.0
+      },
+      "p50_ms": 138.0,
+      "p95_ms": 194,
+      "questions": 300
+    },
+    {
+      "label": "Dense (bi-encoder)",
+      "retriever": "dense",
+      "reranker": null,
+      "run_id": "dense-20261125-203001",
+      "dataset": "scifact",
+      "metrics": {
+        "recall_at_5": 0.623,
+        "mrr_at_10": 0.534,
+        "faithfulness": 0.0,
+        "retrieval_ms": 18.0,
+        "latency_ms": 19.0
+      },
+      "p50_ms": 18.0,
+      "p95_ms": 22,
+      "questions": 300
+    },
+    {
+      "label": "Hybrid (RRF)",
+      "retriever": "hybrid",
+      "reranker": null,
+      "run_id": "hybrid-20261125-203903",
+      "dataset": "scifact",
+      "metrics": {
+        "recall_at_5": 0.703,
+        "mrr_at_10": 0.599,
+        "faithfulness": 0.0,
+        "retrieval_ms": 232.0,
+        "latency_ms": 232.0
+      },
+      "p50_ms": 218.0,
+      "p95_ms": 384,
+      "questions": 300
+    },
+    {
+      "label": "Hybrid + cross-encoder",
+      "retriever": "hybrid",
+      "reranker": "ms-marco-mini",
+      "run_id": "hybrid-20261125-204853",
+      "dataset": "scifact",
+      "metrics": {
+        "recall_at_5": 0.747,
+        "mrr_at_10": 0.625,
+        "faithfulness": 0.0,
+        "retrieval_ms": 245.0,
+        "rerank_ms": 257.0,
+        "latency_ms": 502.0
+      },
+      "p50_ms": 485.0,
+      "p95_ms": 680,
+      "questions": 300
+    }
+  ]
+}
