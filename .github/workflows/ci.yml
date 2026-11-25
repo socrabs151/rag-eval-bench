@@ -62,3 +62,24 @@ jobs:
         run: rag-eval-bench run --retriever bm25 --k 5 --name ci-smoke
       - name: Check the run artifact
         run: test -s "$(ls artifacts/runs/*.json | head -n1)"
+
+  dense:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Cache Hugging Face models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-e5-small-and-ms-marco-mini-v1
+      - name: Install with retrieval extras
+        run: python -m pip install -e ".[dev,retrieval]"
+      - name: Dense retrieval
+        run: rag-eval-bench run --retriever dense --k 3 --name ci-dense
+      - name: Hybrid retrieval with reranking
+        run: rag-eval-bench run --retriever hybrid --k 3 --reranker ms-marco-mini --candidates 5 --name ci-rerank
