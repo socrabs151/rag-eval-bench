@@ -10,6 +10,7 @@ from pathlib import Path
 from .config import Settings
 from .datasets import SPECS, DatasetError, fetch_dataset
 from .evaluation.runner import run_experiment
+from .retrieval.rerank import RERANKER_MODELS
 from .storage import Store
 
 
@@ -26,6 +27,22 @@ def _build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--generator", default="extractive", choices=["extractive", "ollama"])
     run_parser.add_argument("--model", default="qwen2.5:3b-instruct")
     run_parser.add_argument("--name")
+    run_parser.add_argument(
+        "--reranker",
+        default="none",
+        choices=["none", *sorted(RERANKER_MODELS)],
+        help="cross-encoder reranker applied to the retrieved candidates",
+    )
+    run_parser.add_argument(
+        "--candidates",
+        type=int,
+        default=20,
+        help="candidates passed to the reranker (default: 20)",
+    )
+    run_parser.add_argument(
+        "--dense-model",
+        help="sentence-transformers model for dense retrieval",
+    )
     run_parser.add_argument(
         "--data-dir",
         type=Path,
@@ -104,6 +121,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         generator=args.generator,
         model=args.model,
         name=args.name,
+        reranker=args.reranker,
+        candidates=args.candidates,
+        dense_model=args.dense_model,
     )
     details = " ".join(f"{key}={value}" for key, value in record.metrics.items())
     print(f"{record.id}: {details}")

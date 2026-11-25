@@ -14,18 +14,22 @@ from ..retrieval.base import Retriever
 from ..retrieval.bm25 import BM25Retriever
 from ..retrieval.dense import DenseRetriever
 from ..retrieval.hybrid import HybridRetriever
+from ..retrieval.rerank import RERANKER_MODELS, CrossEncoderReranker, Reranker
 from ..schemas import ExampleRecord, ExperimentConfig, RunRecord, SeriesPoint, StageRecord
 from ..storage import Store
 from .metrics import recall_at_k, reciprocal_rank, token_f1
 
 
-def build_retriever(name: str, chunks: Sequence[Chunk]) -> Retriever:
+def build_retriever(
+    name: str, chunks: Sequence[Chunk], *, dense_model: str | None = None
+) -> Retriever:
     if name == "bm25":
         return BM25Retriever(chunks)
     if name == "dense":
-        return DenseRetriever(chunks)
+        return DenseRetriever(chunks, **({"model_name": dense_model} if dense_model else {}))
     if name == "hybrid":
-        return HybridRetriever([BM25Retriever(chunks), DenseRetriever(chunks)])
+        dense = DenseRetriever(chunks, **({"model_name": dense_model} if dense_model else {}))
+        return HybridRetriever([BM25Retriever(chunks), dense])
     raise ValueError(f"unknown retriever: {name}")
 
 
@@ -35,6 +39,16 @@ def build_generator(name: str, model: str) -> Generator:
     if name == "ollama":
         return OllamaGenerator(model)
     raise ValueError(f"unknown generator: {name}")
+
+
+def build_reranker(name: str | None) -> Reranker | None:
+    if name is None or name == "none":
+        return None
+    model_name = RERANKER_MODELS.get(name)
+    if model_name is None:
+        known = ", ".join(["none", *sorted(RERANKER_MODELS)])
+        raise ValueError(f"unknown reranker: {name}; available: {known}")
+    return CrossEncoderReranker(model_name)
 
 
 def run_experiment(
@@ -48,15 +62,25 @@ def run_experiment(
     name: str | None = None,
     chunk_size: int = 400,
     chunk_overlap: int = 50,
+    reranker: str | None = None,
+    candidates: int = 20,
+    dense_model: str | None = None,
 ) -> RunRecord:
     if not store.corpus:
         raise RuntimeError("no corpus documents found")
     if not store.questions:
         raise RuntimeError("no questions found")
+    if k <= 0:
+        raise ValueError("k must be positive")
+
+    reranker_impl = build_reranker(reranker)
+    if reranker_impl is not None and candidates < k:
+        raise ValueError("candidates must be greater than or equal to k")
+    retrieve_k = max(k, candidates) if reranker_impl is not None else k
 
     started = datetime.now(UTC)
     chunks = chunk_documents(store.corpus, size=chunk_size, overlap=chunk_overlap)
-    retriever_impl = build_retriever(retriever, chunks)
+    retriever_impl = build_retriever(retriever, chunks, dense_model=dense_model)
     generator_impl = build_generator(generator, model)
     indexed_at = datetime.now(UTC)
 
@@ -66,6 +90,8 @@ def run_experiment(
     recall_values: list[float] = []
     rr_values: list[float] = []
     latencies: list[int] = []
+    retrieval_times: list[int] = []
+    rerank_times: list[int] = []
     series_f1: list[SeriesPoint] = []
     series_recall: list[SeriesPoint] = []
     series_mrr: list[SeriesPoint] = []
@@ -73,7 +99,15 @@ def run_experiment(
 
     for step, question in enumerate(store.questions):
         tick = time.perf_counter()
-        hits = retriever_impl.search(question.question, k)
+        hits = retriever_impl.search(question.question, retrieve_k)
+        retrieval_ms = int((time.perf_counter() - tick) * 1000)
+
+        rerank_ms = 0
+        if reranker_impl is not None:
+            rerank_tick = time.perf_counter()
+            hits = reranker_impl.rerank(question.question, hits, k)
+            rerank_ms = int((time.perf_counter() - rerank_tick) * 1000)
+
         retrieved_ids = list(dict.fromkeys(hit.chunk.doc_id for hit in hits))
         generation = generator_impl.generate(question.question, hits)
         latency = int((time.perf_counter() - tick) * 1000)
@@ -88,6 +122,8 @@ def run_experiment(
         recall_values.append(recall)
         rr_values.append(rr)
         latencies.append(latency)
+        retrieval_times.append(retrieval_ms)
+        rerank_times.append(rerank_ms)
         examples.append(
             ExampleRecord(
                 id=question.id,
@@ -113,23 +149,28 @@ def run_experiment(
         name=name or f"{retriever}-k{k}-{generator}",
         status="succeeded",
         dataset=store.questions[0].dataset,
-        tags=[retriever, generator],
+        tags=[retriever, generator, *([reranker] if reranker_impl is not None else [])],
         started_at=started,
         finished_at=finished,
         duration_ms=int((finished - started).total_seconds() * 1000),
         config=ExperimentConfig(
             retriever=retriever,
             k=k,
+            reranker=reranker if reranker_impl is not None else None,
             generator=generator if generator == "extractive" else model,
             prompt="v1",
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            candidates=candidates if reranker_impl is not None else 0,
+            dense_model=dense_model,
         ),
         metrics={
             "recall_at_5": round(mean(recall_values), 3),
             "mrr_at_10": round(mean(rr_values), 3),
             **({"f1": round(mean(f1_values), 3)} if has_answers else {}),
             "faithfulness": 0.0,
+            "retrieval_ms": round(mean(retrieval_times)),
+            **({"rerank_ms": round(mean(rerank_times))} if reranker_impl is not None else {}),
             "latency_ms": round(mean(latencies)),
         },
         series={

@@ -33,6 +33,8 @@ class ExperimentConfig(Schema):
     prompt: str = "v1"
     chunk_size: int = 400
     chunk_overlap: int = 50
+    candidates: int = 0
+    dense_model: str | None = None
 
 
 class ExampleRecord(Schema):
